@@ -2,6 +2,7 @@
 // Step 1: Define your autoloader function
 function my_autoloader($class_name) {
     // Convert namespace separators (\) to directory separators (/)
+    $class_name = strtolower($class_name);
     $file_path = str_replace('\\', DIRECTORY_SEPARATOR, $class_name);
     // Build the full path to the class file
     $file_path =   $file_path . '.php';
@@ -10,7 +11,9 @@ function my_autoloader($class_name) {
     if (file_exists($file_path)) {        
         // Load the class file
         require_once $file_path;
-    }
+    }else{
+		echo "File: $file_path not exist";
+	}
 }
 // Step 2: Register your autoloader function
 spl_autoload_register('my_autoloader');

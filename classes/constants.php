@@ -18,7 +18,9 @@
 	define('API_PARAM_REQUIRED', 					106);
 	define('API_DOST_NOT_EXIST', 					107);
 	define('INVALID_USER_PASS', 					108);
-	define('USER_NOT_ACTIVE', 						109);
+	define('INVALID_USER', 							109);
+	define('USER_NOT_ACTIVE', 						110);
+	define('DUPLICATE_DATA', 						111);
 
 	define('SUCCESS_RESPONSE', 						200);
 

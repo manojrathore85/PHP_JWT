@@ -33,14 +33,14 @@
 		function getCreatedOn() { return $this->createdOn; }
 
 		public function __construct() {
-			$db = new DbConnect();
+			$db = new \classes\DbConnect();
 			$this->dbConn = $db->connect();
 		}
 
 		public function getAllCustomers() {
 			$stmt = $this->dbConn->prepare("SELECT * FROM " . $this->tableName);
 			$stmt->execute();
-			$customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+			$customers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			return $customers;
 		}
 
@@ -59,7 +59,7 @@
 			$stmt = $this->dbConn->prepare($sql);
 			$stmt->bindParam(':customerId', $this->id);
 			$stmt->execute();
-			$customer = $stmt->fetch(PDO::FETCH_ASSOC);
+			$customer = $stmt->fetch(\PDO::FETCH_ASSOC);
 			return $customer;
 		}
 		

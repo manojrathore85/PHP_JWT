@@ -1,32 +1,40 @@
 <?php 
 	namespace classes;
+
+	//require_once('DbConnect.php');
+	//require_once('rest.php');
+
 	class Api extends Rest {
 		
 		public function __construct() {
 			parent::__construct();
 		}
 		public function register(){
-			$first_name = $this->validateParameter('first_name',$this->param['first_name'],STRING);
-			$last_name = $this->validateParameter('first_name',$this->param['first_name'],STRING);
+			
+			$name = $this->validateParameter('name',$this->param['name'],STRING);
 			$email = $this->validateParameter('email',$this->param['email'],STRING);
-			$password = $this->validateParameter('password',$this->param['password'],STRING);
-			try {
-				$this->insert('users',[
-
-				]);
-			} catch (Exception $e) {
-				//throw $th;
-			}
+			$phone = $this->validateParameter('phone',$this->param['phone'],STRING);			
+			$password = $this->validateParameter('password',$this->param['password'],STRING);			
+			
+			$this->insert('users',[
+				'name'=>$name,
+				'email'=>$email,
+				'phone'=>$phone,
+				'password'=>$password,
+				'active'=>1,
+			]);
+			$this->returnResponse(SUCCESS_RESPONSE, "User successfully registered with us");
+	
 		}
 		public function logIn() {
 			$email = $this->validateParameter('email', $this->param['email'], STRING);
-			$pass = $this->validateParameter('pass', $this->param['pass'], STRING);
+			$password = $this->validateParameter('password', $this->param['password'], STRING);
 			try {
-				$stmt = $this->dbConn->prepare("SELECT * FROM users WHERE email = :email AND password = :pass");
+				$stmt = $this->dbConn->prepare("SELECT * FROM users WHERE email = :email AND password = :password");
 				$stmt->bindParam(":email", $email);
-				$stmt->bindParam(":pass", $pass);
+				$stmt->bindParam(":password", $password);
 				$stmt->execute();
-				$user = $stmt->fetch(PDO::FETCH_ASSOC);
+				$user = $stmt->fetch(\PDO::FETCH_ASSOC);
 				if(!is_array($user)) {
 					$this->returnResponse(INVALID_USER_PASS, "Email or Password is incorrect.");
 				}
@@ -38,15 +46,15 @@
 				$paylod = [
 					'iat' => time(),
 					'iss' => 'localhost',
-					'exp' => time() + (15*60),
+					'exp' => time() + (15*60*60),
 					'userId' => $user['id']
 				];
 
-				$token = JWT::encode($paylod, SECRETE_KEY);
+				$token = \classes\JWT::encode($paylod, SECRETE_KEY);
 				
 				$data = ['token' => $token];
 				$this->returnResponse(SUCCESS_RESPONSE, $data);
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				$this->throwError(JWT_PROCESSING_ERROR, $e->getMessage());
 			}
 		}
@@ -54,13 +62,13 @@
 		public function addCustomer() {
 			$name = $this->validateParameter('name', $this->param['name'], STRING, false);
 			$email = $this->validateParameter('email', $this->param['email'], STRING, false);
-			$addr = $this->validateParameter('addr', $this->param['addr'], STRING, false);
+			$address = $this->validateParameter('address', $this->param['address'], STRING, false);
 			$mobile = $this->validateParameter('mobile', $this->param['mobile'], INTEGER, false);
 
-			$cust = new Customer;
+			$cust = new \classes\Customer;
 			$cust->setName($name);
 			$cust->setEmail($email);
-			$cust->setAddress($addr);
+			$cust->setAddress($address);
 			$cust->setMobile($mobile);
 			$cust->setCreatedBy($this->userId);
 			$cust->setCreatedOn(date('Y-m-d'));
@@ -74,10 +82,10 @@
 			$this->returnResponse(SUCCESS_RESPONSE, $message);
 		}
 
-		public function getCustomerDetails() {
+		public function getCustomer() {
 			$customerId = $this->validateParameter('customerId', $this->param['customerId'], INTEGER);
 
-			$cust = new Customer;
+			$cust = new \classes\Customer;
 			$cust->setId($customerId);
 			$customer = $cust->getCustomerDetailsById();
 			if(!is_array($customer)) {
@@ -93,17 +101,25 @@
 			$response['lastUpdatedBy'] 	= $customer['updated_user'];
 			$this->returnResponse(SUCCESS_RESPONSE, $response);
 		}
+		public function getAllCustomers() {
+			$cust = new \classes\Customer;
+			$customers = $cust->getAllCustomers();
+			if(!is_array($customers)) {
+				$this->returnResponse(SUCCESS_RESPONSE, ['message' => 'Customer details not found.']);
+			}
+			$this->returnResponse(SUCCESS_RESPONSE, $customers);
+		}
 
 		public function updateCustomer() {
 			$customerId = $this->validateParameter('customerId', $this->param['customerId'], INTEGER);
 			$name = $this->validateParameter('name', $this->param['name'], STRING, false);
-			$addr = $this->validateParameter('addr', $this->param['addr'], STRING, false);
+			$address = $this->validateParameter('address', $this->param['address'], STRING, false);
 			$mobile = $this->validateParameter('mobile', $this->param['mobile'], INTEGER, false);
 
-			$cust = new Customer;
+			$cust = new \classes\Customer;
 			$cust->setId($customerId);
 			$cust->setName($name);
-			$cust->setAddress($addr);
+			$cust->setAddress($address);
 			$cust->setMobile($mobile);
 			$cust->setUpdatedBy($this->userId);
 			$cust->setUpdatedOn(date('Y-m-d'));
@@ -120,7 +136,7 @@
 		public function deleteCustomer() {
 			$customerId = $this->validateParameter('customerId', $this->param['customerId'], INTEGER);
 
-			$cust = new Customer;
+			$cust = new \classes\Customer;
 			$cust->setId($customerId);
 
 			if(!$cust->delete()) {
