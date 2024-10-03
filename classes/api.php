@@ -36,11 +36,11 @@
 				$stmt->execute();
 				$user = $stmt->fetch(\PDO::FETCH_ASSOC);
 				if(!is_array($user)) {
-					$this->returnResponse(INVALID_USER_PASS, "Email or Password is incorrect.");
+					$this->throwError(INVALID_USER_PASS, "Email or Password is incorrect.");
 				}
 
 				if( $user['active'] == 0 ) {
-					$this->returnResponse(USER_NOT_ACTIVE, "User is not activated. Please contact to admin.");
+					$this->throwError(USER_NOT_ACTIVE, "User is not activated. Please contact to admin.");
 				}
 
 				$paylod = [
